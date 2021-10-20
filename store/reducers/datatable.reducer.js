@@ -17,6 +17,18 @@ export function datatableReducer(state = {}, action){
       return {
         error: action.error
       };
+    case datatableTypes.POST_REQUEST:
+      return {
+        loading: true
+      };
+    case datatableTypes.POST_SUCCESS:
+      return Object.assign({}, state, {
+        payload: action.user
+      });
+    case datatableTypes.POST_FAILURE:
+      return {
+        error: action.error
+      };
     default:
       return state;
   }

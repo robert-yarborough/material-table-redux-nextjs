@@ -53,7 +53,7 @@ const validateEmail = (email) => {
 
 const DataTable = () => {
   const dispatch = useDispatch();
-  const users = useSelector((state) => state.datatable.payload );
+  const users = useSelector((state) => state.datatable);
   const [user, setUser] = useState([]);
   const [iserror, setIserror] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -72,8 +72,11 @@ const DataTable = () => {
 
   useEffect(() => {
     dispatch(datatableActions.getUsers());
-    setUser(users.data);
-    console.log('users', user);
+    const payloadMap = new Map(Object.entries(users.payload));
+    const getPayload = payloadMap.get('data');
+    console.log('payload', getPayload);
+    setUser(getPayload);
+    console.log('user', {user} );
   }, []);
 
 
@@ -162,20 +165,7 @@ const DataTable = () => {
     }
 
     if (errorList.length < 1) {
-      axios.post(`https://jsonplaceholder.typicode.com/users`, newData)
-        .then(response => {
-          let newUserdata = [...user];
-          newUserdata.push(newData);
-          setUser(newUserdata);
-          resolve()
-          setErrorMessages([])
-          setIserror(false)
-        })
-        .catch(error => {
-          setErrorMessages(["Cannot add data. Server error!"])
-          setIserror(true)
-          resolve()
-        })
+      dispatch(datatableActions.addUser(newData, resolve));
     } else {
       setErrorMessages(errorList)
       setIserror(true)
