@@ -1,19 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { datatableActions } from "../../store/actions/datatable.actions";
 import MaterialTable from 'material-table';
-import './App.css';
-import axios from 'axios';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import {
+  AddBox,
+  ArrowDownward,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clear,
+  DeleteOutline,
+  Edit,
+  FilterList,
+  FirstPage,
+  LastPage,
+  Remove,
+  SaveAlt,
+  Search,
+  ViewColumn
+} from "@material-ui/icons";
 
+
+
+const tableIcons = {
+  Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
+  Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
+  Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
+  DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
+  Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
+  Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
+  Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
+  FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
+  LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
+  NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
+  PreviousPage: forwardRef((props, ref) => <ChevronLeft {...props} ref={ref} />),
+  ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
+  SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
+  ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
+  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
+};
 
 // regex for email validation
+// TODO: use Formik package to validate form values
 const validateEmail = (email) => {
   const re = /^((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))$/;
   return re.test(String(email).toLowerCase());
 }
 
 
-const App = () => {
-
+const DataTable = () => {
+  const dispatch = useDispatch();
+  const users = useSelector((state) => state.datatable.payload );
   const [user, setUser] = useState([]);
   const [iserror, setIserror] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -27,18 +67,14 @@ const App = () => {
   ]
 
   // let data = [
-  //   { name: 'manish', username: 'traptrick', email: 'themk85@gmail.com', phone: '9999999999', website: 'https://github.com/traptrick' }
-  // ]  
+  //   { name: 'robert', username: 'ryarborough', email: 'admin@robert-yarborough.com', phone: '9999999999', website: 'http://robert-yarborough.com' }
+  // ]
 
   useEffect(() => {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
-      .then(res => {
-        const users = res.data;
-        setUser(users);
-        // console.log(users);
-      })
-  }, [])
-
+    dispatch(datatableActions.getUsers());
+    setUser(users.data);
+    console.log('users', user);
+  }, []);
 
 
   //function for updating the existing row details
@@ -151,11 +187,11 @@ const App = () => {
   return (
     <div className="app">
       <h1>Material Table Example Using JSONPlaceholder API</h1> <br /><br />
-
       <MaterialTable
         title="User Details"
         columns={columns}
         data={user}
+        icons={tableIcons}
         options={{
           headerStyle: { borderBottomColor: 'red', borderBottomWidth: '3px', fontFamily: 'verdana' },
           actionsColumnIndex: -1
@@ -164,7 +200,6 @@ const App = () => {
           onRowUpdate: (newData, oldData) =>
             new Promise((resolve) => {
               handleRowUpdate(newData, oldData, resolve);
-
             }),
           onRowAdd: (newData) =>
             new Promise((resolve) => {
@@ -179,17 +214,16 @@ const App = () => {
 
       <div>
         {iserror &&
-          <Alert severity="error">
-            <AlertTitle>ERROR</AlertTitle>
-            {errorMessages.map((msg, i) => {
-              return <div key={i}>{msg}</div>
-            })}
-          </Alert>
+        <Alert severity="error">
+          <AlertTitle>ERROR</AlertTitle>
+          {errorMessages.map((msg, i) => {
+            return <div key={i}>{msg}</div>
+          })}
+        </Alert>
         }
       </div>
-
     </div>
   );
 }
 
-export default App;
+export default DataTable;
